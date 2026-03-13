@@ -5,7 +5,7 @@ from deal_viewer.services.template_service import get_template_by_name
 router = APIRouter()
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.get("/", status_code=status.HTTP_201_CREATED)
 async def upload_json(template_name: str, request: Request):
     deals = get_all_deals()  
     template = get_template_by_name(request.app.database, template_name)
@@ -27,10 +27,10 @@ async def upload_json(template_name: str, request: Request):
             for field in fields:
                 value = None
                 if "." in field:
-                    splited = field.split(".")
+                    parent, child = field.split(".")
+                    if parent in deal and isinstance(deal[parent], dict) and child in deal[parent]:
+                        value = deal[parent][child]
 
-                    if splited[0] in deal and splited[1] in deal[splited[0]]:
-                        value = deal[splited[0]][splited[1]]
 
 
                 else:
@@ -53,7 +53,7 @@ async def upload_json(template_name: str, request: Request):
 
             if "." in field:
                 parent, child = field.split(".")
-                if parent in deal and child in deal[parent]:
+                if parent in deal and isinstance(deal[parent], dict) and child in deal[parent]:
                     value = deal[parent][child]
             else:
                 if field in deal:
