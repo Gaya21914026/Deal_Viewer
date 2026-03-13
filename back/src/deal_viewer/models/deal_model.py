@@ -23,7 +23,7 @@ CONTACT_FIELDS = [
     "isDecisionMaker",
 ]
 
-# Champs générés automatiquement 
+# Champs  automatiques
 AUTOMATIC_FIELDS = [
     "createdAt",
 ]

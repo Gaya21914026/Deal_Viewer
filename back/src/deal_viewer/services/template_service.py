@@ -67,9 +67,9 @@ def update_template(db, template_id: str, template: dict):
         return "empty"
 
     if update_result.modified_count == 0:
-        return None  # pas trouvé
+        return None  
 
-    # Récupérer le document mis à jour
+
     existing = db["template"].find_one({"_id": oid})
     if existing:
         existing["_id"] = str(existing["_id"])

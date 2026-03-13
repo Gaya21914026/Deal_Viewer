@@ -15,7 +15,7 @@ class DealTemplateAdapter:
         return projection
 
     @staticmethod
-    def get_nested_value(data, path):
+    def get_champs_imbrique(data, path):
         keys = path.split(".")
         for key in keys:
             if isinstance(data, dict) and key in data:
@@ -39,7 +39,7 @@ class DealTemplateAdapter:
             for section in sections:
                 section_fields = {}
                 for field in section["fields"]:
-                    value = DealTemplateAdapter.get_nested_value(deal, field)
+                    value = DealTemplateAdapter.get_champs_imbrique(deal, field)
                     label = labels.get(field, field)
                     section_fields[label] = value
 
@@ -51,7 +51,7 @@ class DealTemplateAdapter:
             
             label_values = {}
             for field in visibleFields:
-                value = DealTemplateAdapter.get_nested_value(deal, field)
+                value = DealTemplateAdapter.get_champs_imbrique(deal, field)
                 if value is not None:
                     label_values[field] = value
 

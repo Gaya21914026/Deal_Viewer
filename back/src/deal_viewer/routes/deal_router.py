@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, HTTPException, Query
 from deal_viewer.utils.deal_validator import validate_and_build_deal
-from deal_viewer.services.deal_service import  delete_fields, get_all_deals, insert_deal, get_deal_by_id,update_deal,delete_deal
+from deal_viewer.services.deal_service import delete_fields, get_all_deals, insert_deal, get_deal_by_id, update_deal, delete_deal, get_filtered_deals
 
 
 router = APIRouter(prefix="/deals", tags=["Deals"])
@@ -24,11 +24,23 @@ def create_deal(payload: dict):
 
 
 @router.get("/")
-def get_deals():
+def get_deals(
+    clientName: str = Query(None),
+    startDate: str = Query(None),
+    endDate: str = Query(None)
+):
     try:
-        deals = get_all_deals()
+        # Si des filtres sont fournis, les appliquer
+        if clientName or startDate or endDate:
+            deals = get_filtered_deals(clientName, startDate, endDate)
+        else:
+            deals = get_all_deals()
+        
         return deals
 
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur interne : {e}")
     

@@ -13,13 +13,13 @@ def validate_and_build_deal(data: dict) -> dict:
 
     deal = {}
 
-    # Vérification des champs obligatoires
+    # Verif champs obligatoires
     for field in REQUIRED_FIELDS:
         if field not in data:
             raise ValueError(f"Champ obligatoire manquant : {field}")
         deal[field] = data[field]
 
-    # Vérification des contacts
+    # Verif des contacts
     contacts = data.get("contacts", [])
     if not isinstance(contacts, list):
         raise ValueError("Le champ 'contacts' doit être une liste.")
@@ -46,7 +46,6 @@ def validate_and_build_deal(data: dict) -> dict:
 
     # champs optionnels
     for key, value in data.items():
-        # Déjà géré
         if key in REQUIRED_FIELDS or key in AUTOMATIC_FIELDS or key == "contacts":
             continue
         deal[key] = value  

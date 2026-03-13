@@ -1,12 +1,11 @@
 from datetime import UTC, datetime
-
 from pymongo.errors import DuplicateKeyError
 from deal_viewer.config.database import get_collection
 from bson import ObjectId
 from deal_viewer.models.deal_model import REQUIRED_FIELDS, CONTACT_FIELDS, AUTOMATIC_FIELDS
 
 collection = get_collection("deals")
-"insert le deal si il est conforme et retourne son id, sinon retourne l'erreur"
+
 def insert_deal(deal: dict) -> str:
 
     try:
@@ -27,6 +26,7 @@ def get_all_deals() -> list:
     
     return deals
 
+# avec projection
 def get_all_deals_projection(database, projection=None):
     if projection:
         return list(database["deals"].find({}, projection))
@@ -105,10 +105,6 @@ def delete_fields(deal_id: str, fields: list[str]) -> dict:
             unset_fields[field] = ""
 
     
-    if not unset_fields:
-        return deal  
-
-    
     collection.update_one(
         {"_id": ObjectId(deal_id)},
         {
@@ -120,3 +116,39 @@ def delete_fields(deal_id: str, fields: list[str]) -> dict:
     updated = collection.find_one({"_id": ObjectId(deal_id)})
     updated["_id"] = str(updated["_id"])
     return updated
+
+
+def get_filtered_deals(clientName: str = None, startDate: str = None, endDate: str = None) -> list:
+    
+    filters = {}
+    
+    # Application des filtres
+    if clientName:
+        filters["clientName"] = {"$regex": clientName, "$options": "i"}
+    
+   
+    if startDate or endDate:
+        date_filter = {}
+        
+        try:
+            if startDate:
+                start = datetime.strptime(startDate, "%Y-%m-%d").replace(tzinfo=UTC)
+                date_filter["$gte"] = start
+            
+            if endDate:
+                end = datetime.strptime(endDate, "%Y-%m-%d").replace(hour=23, minute=59, second=59, tzinfo=UTC)
+                date_filter["$lte"] = end
+            
+            if date_filter:
+                filters["createdAt"] = date_filter
+        
+        except ValueError as e:
+            raise ValueError(f"Format de date invalide. Utilisez YYYY-MM-DD. Erreur: {str(e)}")
+    
+
+    deals = list(collection.find(filters))
+
+    for deal in deals:
+        deal["_id"] = str(deal["_id"])
+    
+    return deals
