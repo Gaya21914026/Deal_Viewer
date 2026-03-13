@@ -28,6 +28,13 @@ def get_template_by_id(db, template_id: str):
         template["_id"] = str(template["_id"])
     return template
 
+def get_template_by_name(db, template_name: str):
+
+    template = db["template"].find_one({"name": template_name})
+    if template:
+        template["_id"] = str(template["_id"])
+    return template
+
 def delete_template(db, template_id: str):
     try:
         oid = ObjectId(template_id)

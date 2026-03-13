@@ -6,57 +6,79 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 import json
 from bson import ObjectId
+from deal_viewer.services.deal_service import get_all_deals
+from deal_viewer.services.template_service import get_template_by_name
+
 router = APIRouter()
 
 
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def upload_json(template_name: str,request: Request):
+    data = get_all_deals()
+    template = get_template_by_name(request.app.database,template_name)
+    visibleFields = template["visibleFields"]
+    
+    new_list = []
 
-@router.post("/", response_description="Get deal", status_code=status.HTTP_201_CREATED)
-async def upload_json(request: Request, file: UploadFile = File(...)):
-    # Validate file type
-    if not file.filename.lower().endswith(".json"):
-        raise HTTPException(status_code=400, detail="Only .json files are allowed")
+    for deal in data:  
+        newobj = {}
 
-    try:
+        for field in visibleFields:
+            if "." in field:
+                fields = field.split(".")  
+                if fields[0] in deal and fields[1] in deal[fields[0]]:
+                    newobj[field] = deal[fields[0]][fields[1]]
+
+            else:
+                if field in deal:
+                    newobj[field] = deal[field]
+
+        new_list.append(newobj)
+
+    return new_list
+   
+
+
+
+# @router.post("/", response_description="Get deal", status_code=status.HTTP_201_CREATED)
+# async def upload_json(template_name:str):
+
+    # try:
         # Read file contents
-        contents = await file.read()
+        # contents = get_all_deals()
         # 1 - recuperer le nom du template 
         # 2 - recupère depuis ta db 
+        # template=get_template_by_name(template_name)
         # 3 - recup visibleFields
+        # visibleFields = template["visibleFields"]
         # 4 Parcourir le deals et recupèrer les éléments qui sont dans visibleFields
         # Parse JSON
-        data = json.loads(contents.decode("utf-8"))
-        visibleFields = [ 
-            "reference", "title", "clientName", "status",
-            "estimatedRevenue", "estimatedMargin", "currency",
-            "financials.subtotal", "financials.discountGlobalPercent",
-            "financials.taxPercent", "financials.totalExclTax",
-            "financials.totalInclTax", "financials.estimatedCost",
-            "financials.expectedProfit", "expectedCloseDate"
-        ]
+        # print(visibleFields)
+        
 
-        newobj = {}
-        for field in visibleFields: 
-            if field.__contains__("."):
-                fields = field.split('.')
-                if field in data and data[field] is not None:
-                    newobj[field] = data[fields[0]][fields[1]]
+    #     newobj = {}
+    #     for field in visibleFields: 
+    #         if field.__contains__("."):
+    #             fields = field.split('.')
+    #             if field in data and data[field] is not None:
+    #                 newobj[field] = data[fields[0]][fields[1]]
             
 
-        deal = jsonable_encoder(newobj)
+    #     deal = jsonable_encoder(newobj)
 
-        # new_deal = request.app.database["deal"].insert_one(data)
+    #     # new_deal = request.app.database["deal"].insert_one(data)
              
-        return JSONResponse(content={
-            "filename": file.filename,
-            "filteredDeal": newobj,
-            "inserted_id": str(deal)
-        })
+    #     return JSONResponse(content={
+    #         "filename": file.filename,
+    #         "filteredDeal": newobj,
+    #         "inserted_id": str(deal)
+    #     })
 
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid JSON format")
+    # except json.JSONDecodeError:
+    #     raise HTTPException(status_code=400, detail="Invalid JSON format")
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
 
 
 
