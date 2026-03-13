@@ -27,6 +27,12 @@ def get_all_deals() -> list:
     
     return deals
 
+def get_all_deals_projection(database, projection=None):
+    if projection:
+        return list(database["deals"].find({}, projection))
+    return list(database["deals"].find({}))
+
+
 def get_deal_by_id(deal_id: str) -> dict:
 
     try:
