@@ -24,7 +24,14 @@ FRONT_DIR = BASE_DIR / "front"
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8000"],
+    allow_origins=[
+        "http://127.0.0.1:8000",
+        "http://127.0.0.1:8080",
+        "http://localhost:8000",
+        "http://localhost:8080",
+        "http://127.0.0.1",
+        "http://localhost"
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],

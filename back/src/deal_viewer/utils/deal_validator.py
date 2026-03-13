@@ -20,9 +20,9 @@ def validate_and_build_deal(data: dict) -> dict:
         deal[field] = data[field]
 
     # Vérification des contacts
-    contacts = data.get("contacts")
-    if not isinstance(contacts, list) or len(contacts) == 0:
-        raise ValueError("Le champ 'contacts' doit être une liste non vide.")
+    contacts = data.get("contacts", [])
+    if not isinstance(contacts, list):
+        raise ValueError("Le champ 'contacts' doit être une liste.")
 
     validated_contacts = []
     for contact in contacts:
